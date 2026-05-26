@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendario Tarifario 6.1TD — Penalva Alimentación</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
+
+  :root {
+    --bg:        #0d1117;
+    --bg2:       #161b22;
+    --bg3:       #21262d;
+    --border:    #30363d;
+    --text:      #e6edf3;
+    --muted:     #7d8590;
+    --p1:        #ff4444;  --p1-bg: rgba(255,68,68,0.18);
+    --p2:        #ff8c00;  --p2-bg: rgba(255,140,0,0.18);
+    --p3:        #f0c000;  --p3-bg: rgba(240,192,0,0.18);
+    --p4:        #4caf50;  --p4-bg: rgba(76,175,80,0.18);
+    --p5:        #2196f3;  --p5-bg: rgba(33,150,243,0.18);
+    --p6:        #6e40c9;  --p6-bg: rgba(110,64,201,0.18);
+    --accent:    #58a6ff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    padding: 32px 24px 64px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    max-width: 1100px;
+    margin: 0 auto 40px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+  }
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 600; letter-spacing: 2px;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 8px;
+  }
+  h1 { font-size: 28px; font-weight: 700; line-height: 1.2; margin-bottom: 6px; }
+  .subtitle { font-size: 14px; color: var(--muted); }
+  .cnmc-tag {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    color: var(--muted); white-space: nowrap;
+  }
+  .cnmc-tag span { color: var(--accent); }
+
+  /* ── SECTION ── */
+  .section { max-width: 1100px; margin: 0 auto 48px; }
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 600; letter-spacing: 2px;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── PANEL ── */
+  .panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── RELOJ ── */
+  .clock-stage { position: relative; }
+  #canvas-premium { display: block; }
+  .clock-center-info {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center; pointer-events: none;
+  }
+  .cc-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 56px; font-weight: 700; line-height: 1;
+    transition: color 0.5s ease;
+  }
+  .cc-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); margin-top: 6px;
+  }
+  .cc-season { font-size: 13px; color: var(--text); margin-top: 8px; font-weight: 400; }
+  .cc-time {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 24px; font-weight: 400; margin-top: 10px; letter-spacing: 2px;
+  }
+  .cc-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; letter-spacing: 1.5px; color: var(--muted); margin-top: 4px;
+  }
+
+  /* ── BARRA LINEAL ── */
+  .bar-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .bar-header h2 { font-size: 19px; font-weight: 600; margin-bottom: 4px; }
+  .bar-header .bh-sub { font-size: 13px; color: var(--muted); }
+  .bar-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+    padding: 8px 16px; border-radius: 8px;
+    border: 1px solid var(--p1); color: var(--p1); background: var(--p1-bg);
+    white-space: nowrap;
+  }
+  .linear-bar {
+    display: grid;
+    grid-template-columns: 70px repeat(24, 1fr);
+    gap: 5px;
+    align-items: center;
+  }
+  .lb-rowlabel { font-size: 12px; font-weight: 600; line-height: 1.25; color: var(--muted); }
+  .lb-hour {
+    text-align: center; font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; color: var(--muted); padding-bottom: 6px;
+  }
+  .lb-cell {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 15px;
+    border: 1px solid;
+    transition: transform 0.18s ease, box-shadow 0.3s ease;
+    cursor: default;
+  }
+  .lb-cell:hover { transform: scale(1.14); z-index: 3; position: relative; }
+  .lb-cell.active-now { transform: scale(1.2); z-index: 4; position: relative; }
+  .lb-cell.p1 { background: var(--p1-bg); border-color: var(--p1); color: var(--p1); }
+  .lb-cell.p2 { background: var(--p2-bg); border-color: var(--p2); color: var(--p2); }
+  .lb-cell.p3 { background: var(--p3-bg); border-color: var(--p3); color: var(--p3); }
+  .lb-cell.p4 { background: var(--p4-bg); border-color: var(--p4); color: var(--p4); }
+  .lb-cell.p5 { background: var(--p5-bg); border-color: var(--p5); color: var(--p5); }
+  .lb-cell.p6 { background: var(--p6-bg); border-color: var(--p6); color: var(--p6); }
+
+  .now-note {
+    font-size: 12px; color: var(--muted); font-style: italic;
+    margin-top: 18px; text-align: center; line-height: 1.5;
+  }
+  .now-note strong { color: var(--text); font-style: normal; }
+
+  /* ── SIMULADOR ── */
+  .sim-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 32px;
+  }
+  .sim-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 36px;
+    align-items: center;
+  }
+  @media (max-width: 760px) { .sim-layout { grid-template-columns: 1fr; } }
+
+  .sim-controls { display: flex; flex-direction: column; gap: 22px; }
+  .ctrl-group label {
+    display: block; font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 10px;
+  }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .btn-t {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    padding: 8px 13px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--bg3);
+    color: var(--muted); cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px;
+  }
+  .btn-t:hover { border-color: var(--muted); color: var(--text); }
+  .btn-t.active { color: var(--text); border-color: currentColor; }
+  .btn-t.active.t1 { color: var(--p1); background: var(--p1-bg); }
+  .btn-t.active.t2 { color: var(--p2); background: var(--p2-bg); }
+  .btn-t.active.t3 { color: var(--p3); background: var(--p3-bg); }
+  .btn-t.active.t4 { color: var(--p4); background: var(--p4-bg); }
+  .btn-t.active.day { color: var(--accent); background: rgba(88,166,255,0.15); }
+
+  .hour-slider-wrap { display: flex; flex-direction: column; gap: 6px; }
+  .hour-slider-row { display: flex; align-items: center; gap: 12px; }
+  input[type=range] {
+    flex: 1; -webkit-appearance: none; appearance: none;
+    height: 3px; background: var(--border); border-radius: 2px; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 15px; height: 15px; border-radius: 50%;
+    background: var(--text); cursor: pointer; transition: transform 0.1s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+  input[type=range]::-moz-range-thumb {
+    width: 15px; height: 15px; border-radius: 50%; border: none;
+    background: var(--text); cursor: pointer;
+  }
+  .hour-value {
+    font-family: 'IBM Plex Mono', monospace; font-size: 14px;
+    min-width: 42px; text-align: right; color: var(--text);
+  }
+  .sim-period-display {
+    display: flex; align-items: center; gap: 12px;
+    padding-top: 8px; border-top: 1px solid var(--border);
+  }
+  .sim-period-dot { width: 12px; height: 12px; border-radius: 50%; transition: all 0.3s; }
+  .sim-period-label { font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.5px; }
+
+  .sim-clock-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  #canvas-sim { display: block; }
+  .sim-clock-caption {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--muted); letter-spacing: 1px; text-align: center;
+  }
+
+  /* ── LEYENDA ── */
+  .legend {
+    max-width: 1100px; margin: 0 auto;
+    display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;
+    padding-top: 28px; border-top: 1px solid var(--border);
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted);
+  }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* ── TOOLTIP ── */
+  #tip {
+    position: fixed; z-index: 100; display: none;
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+    padding: 9px 13px; font-size: 11px; pointer-events: none;
+    font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+
+  @media (max-width: 640px) {
+    #canvas-premium { width: 320px; height: 320px; }
+    .linear-bar { grid-template-columns: 50px repeat(24, 1fr); gap: 3px; }
+    .lb-cell { font-size: 11px; border-radius: 5px; }
+    .lb-hour { font-size: 8px; }
+    .panel { padding: 24px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="badge">Empresa · Ciudad</div>
+        <h1>Calendario Tarifario 6.1TD</h1>
+        <div class="subtitle">Período horario en tiempo real · Península</div>
+      </div>
+      <div class="cnmc-tag">Circular <span>3/2020</span> CNMC · art. 7</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Período en curso · tiempo real</div>
+    <div class="panel">
+      <div class="clock-stage">
+        <canvas id="canvas-premium" width="640" height="640"></canvas>
+        <div class="clock-center-info">
+          <div class="cc-badge" id="prem-badge">P1</div>
+          <div class="cc-name" id="prem-name">Punta máxima</div>
+          <div class="cc-season" id="prem-season">T1 Alta · Laborable</div>
+          <div class="cc-time" id="prem-time">00:00</div>
+          <div class="cc-count" id="prem-count">cambia en — min</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Reparto del día completo</div>
+    <div class="panel" style="align-items: stretch;">
+      <div class="bar-header">
+        <div>
+          <h2 id="bar-title">Período por hora — Laborable · Temporada 1 Alta</h2>
+          <div class="bh-sub" id="bar-sub">Meses: Enero, Febrero, Julio, Diciembre · Laborable</div>
+        </div>
+        <div class="bar-badge" id="bar-badge">T1 Alta · Laborable</div>
+      </div>
+      <div class="linear-bar" id="linear-bar"></div>
+      <div class="now-note">
+        La celda resaltada es la <strong>hora actual</strong>. El reloj de arriba y esta barra muestran el mismo dato.
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Simulador · explora cualquier escenario</div>
+    <div class="sim-panel">
+      <div class="sim-layout">
+        <div class="sim-controls">
+          <div class="ctrl-group">
+            <label>Temporada</label>
+            <div class="btn-row" id="btn-temp">
+              <button class="btn-t active t1" data-t="1">T1 Alta</button>
+              <button class="btn-t t2" data-t="2">T2 M.Alta</button>
+              <button class="btn-t t3" data-t="3">T3 Media</button>
+              <button class="btn-t t4" data-t="4">T4 Baja</button>
+            </div>
+          </div>
+          <div class="ctrl-group">
+            <label>Tipo de día</label>
+            <div class="btn-row" id="btn-day">
+              <button class="btn-t active day" data-d="lab">Laborable</button>
+              <button class="btn-t day" data-d="sab">Sábado</button>
+              <button class="btn-t day" data-d="fes">Festivo</button>
+            </div>
+          </div>
+          <div class="hour-slider-wrap">
+            <label>Hora del día</label>
+            <div class="hour-slider-row">
+              <input type="range" id="sim-hour" min="0" max="23" value="10">
+              <span class="hour-value" id="sim-hour-val">10:00</span>
+            </div>
+          </div>
+          <div class="sim-period-display">
+            <div class="sim-period-dot" id="sim-dot"></div>
+            <div class="sim-period-label" id="sim-period-label">P1 — Punta máxima</div>
+          </div>
+        </div>
+        <div class="sim-clock-wrap">
+          <canvas id="canvas-sim" width="400" height="400"></canvas>
+          <div class="sim-clock-caption" id="sim-caption">T1 Alta · Laborable</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:var(--p1)"></span>P1 Punta máxima</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--p2)"></span>P2 Llano alto</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--p3)"></span>P3 Llano medio</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--p4)"></span>P4 Llano bajo</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--p5)"></span>P5 Valle alto</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--p6)"></span>P6 Valle pleno</div>
+  </div>
+
+  <div id="tip"></div>
+
+<script>
+const P_COLOR = { 1:'#ff4444', 2:'#ff8c00', 3:'#f0c000', 4:'#4caf50', 5:'#2196f3', 6:'#6e40c9' };
+const P_GLOW  = { 1:'rgba(255,68,68,0.55)', 2:'rgba(255,140,0,0.55)', 3:'rgba(240,192,0,0.5)',
+                  4:'rgba(76,175,80,0.5)', 5:'rgba(33,150,243,0.5)', 6:'rgba(110,64,201,0.5)' };
+const P_NAME  = { 1:'Punta máxima', 2:'Llano alto', 3:'Llano medio', 4:'Llano bajo', 5:'Valle alto', 6:'Valle pleno' };
+
+const TABLES = {
+  lab: {
+    1: [6,6,6,6,6,6,6,6,2,1,1,1,1,1,2,2,2,2,1,1,1,1,2,2],
+    2: [6,6,6,6,6,6,6,6,3,2,2,2,2,2,3,3,3,3,2,2,2,2,3,3],
+    3: [6,6,6,6,6,6,6,6,4,3,3,3,3,3,4,4,4,4,3,3,3,3,4,4],
+    4: [6,6,6,6,6,6,6,6,5,4,4,4,4,4,5,5,5,5,4,4,4,4,5,5],
+  },
+  sab: { 1:Array(24).fill(6), 2:Array(24).fill(6), 3:Array(24).fill(6), 4:Array(24).fill(6) },
+  fes: { 1:Array(24).fill(6), 2:Array(24).fill(6), 3:Array(24).fill(6), 4:Array(24).fill(6) }
+};
+
+const MES_TEMP = {
+  1:{id:1,name:'T1 Alta'}, 2:{id:1,name:'T1 Alta'}, 3:{id:2,name:'T2 Media Alta'},
+  4:{id:4,name:'T4 Baja'}, 5:{id:4,name:'T4 Baja'}, 6:{id:3,name:'T3 Media'},
+  7:{id:1,name:'T1 Alta'}, 8:{id:3,name:'T3 Media'}, 9:{id:3,name:'T3 Media'},
+  10:{id:4,name:'T4 Baja'}, 11:{id:2,name:'T2 Media Alta'}, 12:{id:1,name:'T1 Alta'}
+};
+const TEMP_NAME = { 1:'T1 Alta', 2:'T2 Media Alta', 3:'T3 Media', 4:'T4 Baja' };
+const TEMP_MESES = {
+  1:'Enero, Febrero, Julio, Diciembre',
+  2:'Marzo, Noviembre',
+  3:'Junio, Agosto, Septiembre',
+  4:'Abril, Mayo, Octubre'
+};
+const DAY_NAME = { lab:'Laborable', sab:'Sábado', fes:'Festivo' };
+
+const FESTIVOS_NAC = ['01-01','05-01','08-15','10-12','11-01','12-06','12-08','12-25'];
+function esFestivo(d){const k=String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');return FESTIVOS_NAC.includes(k)||d.getDay()===0;}
+function getTipoDia(d){const dow=d.getDay();if(dow===0||esFestivo(d))return'fes';if(dow===6)return'sab';return'lab';}
+function hexAlpha(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${a})`;}
+
+function drawClock(canvas, hoursData, activeHour, useMinuteHand) {
+  const W=canvas.width, H=canvas.height, ctx=canvas.getContext('2d');
+  const cx=W/2, cy=H/2;
+  const outerR=W*0.38, innerR=W*0.26, boost=W*0.04, fontSize=W*0.035, numR=W*0.42;
+  const TWO_PI=Math.PI*2, segAngle=TWO_PI/24, off=-Math.PI/2;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#161b22'; ctx.beginPath(); ctx.arc(cx,cy,W*0.48,0,TWO_PI); ctx.fill();
+
+  // Pasada 1: dibujar TODOS los segmentos no activos (con su separación negra)
+  for(let h=0;h<24;h++){
+    if(h===activeHour) continue;
+    const p=hoursData[h], color=P_COLOR[p];
+    const sa=off+h*segAngle, ea=sa+segAngle;
+    const rOut=outerR, rIn=innerR;
+    // relleno translúcido
+    ctx.beginPath();
+    ctx.arc(cx,cy,rOut,sa,ea); ctx.arc(cx,cy,rIn,ea,sa,true); ctx.closePath();
+    ctx.fillStyle = hexAlpha(color,0.18);
+    ctx.fill();
+    // borde saturado
+    ctx.beginPath();
+    ctx.arc(cx,cy,rOut,sa,ea); ctx.arc(cx,cy,rIn,ea,sa,true); ctx.closePath();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.1; ctx.stroke();
+    // separación oscura
+    ctx.beginPath();
+    ctx.arc(cx,cy,rOut+2,sa,ea); ctx.arc(cx,cy,rIn-2,ea,sa,true); ctx.closePath();
+    ctx.strokeStyle='#0d1117'; ctx.lineWidth=2.5; ctx.stroke();
+  }
+
+  // Pasada 2: dibujar el segmento ACTIVO encima de todo, sin que nada lo recorte
+  {
+    const h=activeHour, p=hoursData[h], color=P_COLOR[p];
+    const sa=off+h*segAngle, ea=sa+segAngle;
+    const rOut=outerR+boost, rIn=innerR;
+    ctx.save(); ctx.shadowColor=P_GLOW[p]; ctx.shadowBlur=26;
+    ctx.beginPath();
+    ctx.arc(cx,cy,rOut,sa,ea); ctx.arc(cx,cy,rIn,ea,sa,true); ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.restore();
+    ctx.beginPath();
+    ctx.arc(cx,cy,rOut,sa,ea); ctx.arc(cx,cy,rIn,ea,sa,true); ctx.closePath();
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+
+  ctx.font=`400 ${fontSize}px 'IBM Plex Mono', monospace`; ctx.textAlign='center'; ctx.textBaseline='hanging';
+  for(let h=0;h<24;h++){
+    const a=off+h*segAngle+segAngle/2;
+    const tx = cx + Math.cos(a)*numR;
+    const ty = cy + Math.sin(a)*numR - fontSize*0.4;
+    ctx.fillStyle = h===activeHour ? '#fff' : 'rgba(230,237,243,0.35)';
+    ctx.fillText(h, tx, ty);
+  }
+
+  if(useMinuteHand){
+    const now=new Date(), mf=(now.getMinutes()+now.getSeconds()/60)/60;
+    const ta=off+(activeHour+mf)*segAngle;
+    ctx.save(); ctx.strokeStyle='rgba(255,255,255,0.9)'; ctx.lineWidth=2; ctx.lineCap='round';
+    ctx.shadowColor='rgba(255,255,255,0.6)'; ctx.shadowBlur=6;
+    ctx.beginPath();
+    ctx.moveTo(cx+Math.cos(ta)*(innerR-8), cy+Math.sin(ta)*(innerR-8));
+    ctx.lineTo(cx+Math.cos(ta)*(outerR+boost-2), cy+Math.sin(ta)*(outerR+boost-2));
+    ctx.stroke(); ctx.restore();
+  }
+
+  ctx.beginPath(); ctx.arc(cx,cy,4,0,TWO_PI); ctx.fillStyle='rgba(230,237,243,0.5)'; ctx.fill();
+}
+
+function buildBar(hoursData, activeHour, tempId, tipo){
+  const bar=document.getElementById('linear-bar');
+  const rowLabel = `${TEMP_NAME[tempId]}<br>${DAY_NAME[tipo]}`;
+  let html=`<div class="lb-rowlabel">${rowLabel}</div>`;
+  for(let h=0;h<24;h++) html+=`<div class="lb-hour">${String(h).padStart(2,'0')}h</div>`;
+  html+='<div class="lb-rowlabel"></div>';
+  for(let h=0;h<24;h++){
+    const p=hoursData[h];
+    const cls = h===activeHour ? `lb-cell p${p} active-now` : `lb-cell p${p}`;
+    const sty = h===activeHour ? `style="box-shadow:0 0 16px ${P_GLOW[p]}"` : '';
+    html+=`<div class="${cls}" ${sty} data-h="${h}" data-p="${p}">${p}</div>`;
+  }
+  bar.innerHTML=html;
+  bar.querySelectorAll('.lb-cell').forEach(c=>{
+    c.addEventListener('mousemove',e=>{
+      const p=c.dataset.p, h=c.dataset.h;
+      const tip=document.getElementById('tip');
+      tip.innerHTML=`${String(h).padStart(2,'0')}:00–${String((+h+1)%24).padStart(2,'0')}:00 &rarr; P${p} · ${P_NAME[p]}`;
+      tip.style.display='block';
+      tip.style.left=Math.min(e.clientX+14, window.innerWidth-280)+'px';
+      tip.style.top=(e.clientY+14)+'px';
+    });
+    c.addEventListener('mouseleave',()=>{document.getElementById('tip').style.display='none';});
+  });
+}
+
+// Devuelve el período de una fecha+hora concretas (recalcula temporada y tipo de día)
+function periodoEn(date, hour){
+  const temp=MES_TEMP[date.getMonth()+1];
+  const tipo=getTipoDia(date);
+  return TABLES[tipo][temp.id][hour];
+}
+
+// Minutos que faltan hasta el primer cambio de período, cruzando la medianoche
+// y recalculando temporada/tipo de día para los días siguientes si hace falta.
+function minutosHastaCambio(now){
+  const pAhora = periodoEn(now, now.getHours());
+  const minRestoHora = 60 - now.getMinutes(); // minutos que quedan de la hora en curso
+  // Cursor situado al inicio de la hora siguiente
+  let cursor = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours()+1, 0, 0, 0);
+  let horasCompletas = 0;
+  // Tope de seguridad: 8 días (192 h) por si toda la ventana fuese el mismo período
+  for(let i=0; i<192; i++){
+    if(periodoEn(cursor, cursor.getHours()) !== pAhora){
+      return minRestoHora + horasCompletas*60;
+    }
+    horasCompletas++;
+    cursor = new Date(cursor.getTime() + 3600*1000);
+  }
+  return minRestoHora + horasCompletas*60; // fallback teórico
+}
+
+function formatRestante(totalMin){
+  const dias = Math.floor(totalMin / 1440);
+  const hrs  = Math.floor((totalMin % 1440) / 60);
+  const min  = totalMin % 60;
+  if(dias > 0) return min === 0 ? `${dias}d ${hrs}h` : `${dias}d ${hrs}h ${min}min`;
+  if(hrs === 0) return `${min} min`;
+  if(min === 0) return `${hrs}h`;
+  return `${hrs}h ${min}min`;
+}
+
+function updatePremium(){
+  const now=new Date(), h=now.getHours(), m=now.getMinutes(), mes=now.getMonth()+1;
+  const temp=MES_TEMP[mes], tipo=getTipoDia(now);
+  const data=TABLES[tipo][temp.id], p=data[h];
+  drawClock(document.getElementById('canvas-premium'), data, h, true);
+  document.getElementById('prem-badge').textContent='P'+p;
+  document.getElementById('prem-badge').style.color=P_COLOR[p];
+  document.getElementById('prem-name').textContent=P_NAME[p];
+  document.getElementById('prem-season').textContent=temp.name+' · '+DAY_NAME[tipo];
+  document.getElementById('prem-time').textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+  const minCambio = minutosHastaCambio(now);
+  const fechaCambio = new Date(now.getTime() + minCambio*60000);
+  const pSiguiente = periodoEn(fechaCambio, fechaCambio.getHours());
+  document.getElementById('prem-count').textContent = `P${pSiguiente} en ${formatRestante(minCambio)}`;
+  buildBar(data, h, temp.id, tipo);
+  document.getElementById('bar-title').textContent=`Período por hora — ${DAY_NAME[tipo]} · ${temp.name}`;
+  document.getElementById('bar-sub').textContent=`Meses: ${TEMP_MESES[temp.id]} · ${DAY_NAME[tipo]}`;
+  const bb=document.getElementById('bar-badge');
+  bb.textContent=`${temp.name} · ${DAY_NAME[tipo]}`;
+  bb.style.borderColor=P_COLOR[p]; bb.style.color=P_COLOR[p]; bb.style.background=hexAlpha(P_COLOR[p],0.18);
+}
+
+let simTemp=1, simDay='lab', simHour=10;
+function updateSim(){
+  const data=TABLES[simDay][simTemp], p=data[simHour];
+  drawClock(document.getElementById('canvas-sim'), data, simHour, false);
+  document.getElementById('sim-dot').style.background=P_COLOR[p];
+  document.getElementById('sim-dot').style.boxShadow=`0 0 8px ${P_GLOW[p]}`;
+  document.getElementById('sim-period-label').textContent=`P${p} — ${P_NAME[p]}`;
+  document.getElementById('sim-caption').textContent=`${TEMP_NAME[simTemp]} · ${DAY_NAME[simDay]}`;
+}
+
+document.getElementById('btn-temp').addEventListener('click',e=>{
+  const b=e.target.closest('[data-t]'); if(!b)return;
+  simTemp=+b.dataset.t;
+  document.querySelectorAll('#btn-temp .btn-t').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); updateSim();
+});
+document.getElementById('btn-day').addEventListener('click',e=>{
+  const b=e.target.closest('[data-d]'); if(!b)return;
+  simDay=b.dataset.d;
+  document.querySelectorAll('#btn-day .btn-t').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); updateSim();
+});
+const sh=document.getElementById('sim-hour'), shv=document.getElementById('sim-hour-val');
+sh.addEventListener('input',()=>{
+  simHour=+sh.value; shv.textContent=String(simHour).padStart(2,'0')+':00'; updateSim();
+});
+
+updatePremium();
+updateSim();
+setInterval(updatePremium, 30000);
+</script>
+</body>
+</html>
