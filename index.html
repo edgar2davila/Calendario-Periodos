@@ -252,12 +252,94 @@
     box-shadow: 0 8px 24px rgba(0,0,0,0.5);
   }
 
+  /* ── RESPONSIVE ── */
+
+  /* Tablet: 641px–900px */
+  @media (max-width: 900px) {
+    body { padding: 24px 16px 48px; }
+    h1 { font-size: 22px; }
+    .linear-bar { grid-template-columns: 48px repeat(24, 1fr); gap: 4px; }
+    .lb-cell { font-size: 12px; border-radius: 6px; }
+    .lb-hour { font-size: 9px; }
+    .sim-layout { grid-template-columns: 1fr; }
+    .sim-clock-wrap { order: -1; } /* reloj del simulador arriba en tablet */
+  }
+
+  /* Móvil: hasta 640px */
   @media (max-width: 640px) {
-    #canvas-premium { width: 320px; height: 320px; }
-    .linear-bar { grid-template-columns: 50px repeat(24, 1fr); gap: 3px; }
-    .lb-cell { font-size: 11px; border-radius: 5px; }
+    body { padding: 16px 12px 40px; }
+
+    /* Header */
+    h1 { font-size: 20px; }
+    .cnmc-tag { font-size: 10px; padding: 6px 10px; }
+    .header { margin-bottom: 24px; }
+
+    /* Panel con menos padding */
+    .panel { padding: 16px; }
+    .sim-panel { padding: 20px; }
+
+    /* Reloj premium: escala proporcional al ancho del dispositivo */
+    .clock-stage { width: 100%; display: flex; justify-content: center; }
+    #canvas-premium {
+      width: min(92vw, 380px) !important;
+      height: min(92vw, 380px) !important;
+    }
+
+    /* Barra lineal: quitar etiqueta lateral + scroll horizontal suave */
+    .linear-bar {
+      grid-template-columns: repeat(24, 1fr);
+      gap: 3px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 4px;
+      width: 100%;
+    }
+    /* Ocultar la etiqueta de fila lateral en móvil */
+    .lb-rowlabel { display: none; }
+    .lb-cell {
+      font-size: 11px;
+      border-radius: 5px;
+      min-width: 28px;
+    }
     .lb-hour { font-size: 8px; }
-    .panel { padding: 24px; }
+
+    /* Cabecera de barra: apilar verticalmente */
+    .bar-header { flex-direction: column; gap: 10px; }
+    .bar-header h2 { font-size: 15px; }
+    .bar-badge { align-self: flex-start; }
+
+    /* Simulador: controles arriba, reloj abajo, a pantalla completa */
+    .sim-layout { grid-template-columns: 1fr; gap: 24px; }
+    .sim-clock-wrap { order: 1; width: 100%; align-items: center; }
+    #canvas-sim {
+      width: min(88vw, 320px) !important;
+      height: min(88vw, 320px) !important;
+    }
+
+    /* Botones de temporada y día: expansión completa */
+    .btn-row { gap: 8px; }
+    .btn-t { flex: 1; text-align: center; padding: 10px 8px; font-size: 10px; }
+
+    /* Secciones con menos margen */
+    .section { margin-bottom: 28px; }
+
+    /* Leyenda más compacta */
+    .legend { gap: 10px; }
+    .legend-item { font-size: 10px; }
+  }
+
+  /* Móvil muy pequeño: hasta 380px */
+  @media (max-width: 380px) {
+    #canvas-premium {
+      width: 96vw !important;
+      height: 96vw !important;
+    }
+    #canvas-sim {
+      width: 92vw !important;
+      height: 92vw !important;
+    }
+    .btn-t { font-size: 9px; padding: 8px 4px; }
+    h1 { font-size: 18px; }
   }
 </style>
 </head>
@@ -579,6 +661,31 @@ sh.addEventListener('input',()=>{
 updatePremium();
 updateSim();
 setInterval(updatePremium, 30000);
+
+// ── RESPONSIVE: sincronizar tamaño interno del canvas con su tamaño CSS ──
+function resizeCanvases(){
+  const cp = document.getElementById('canvas-premium');
+  const cs = document.getElementById('canvas-sim');
+  // Leer tamaño visual actual (el que el CSS ha asignado)
+  const wpx = cp.getBoundingClientRect().width;
+  const wsx = cs.getBoundingClientRect().width;
+  // Solo redibuja si el tamaño cambió para evitar trabajo innecesario
+  if(wpx > 0 && Math.round(wpx) !== cp.width){
+    cp.width = Math.round(wpx);
+    cp.height = Math.round(wpx);
+    updatePremium();
+  }
+  if(wsx > 0 && Math.round(wsx) !== cs.width){
+    cs.width = Math.round(wsx);
+    cs.height = Math.round(wsx);
+    updateSim();
+  }
+}
+
+// Ejecutar al cargar y al redimensionar
+window.addEventListener('resize', resizeCanvases);
+// Pequeño delay inicial para que el CSS ya haya aplicado tamaños
+setTimeout(resizeCanvases, 100);
 </script>
 </body>
 </html>
